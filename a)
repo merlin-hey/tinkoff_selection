@@ -105,6 +105,7 @@ def mine_location(back_field):
         row = randint(0, 4)
         column = randint(0, 4)
         back_field[row][column] = 'м'
+        count_of_mines -= 1
         
     # заполнение других клеток количеством её соседей-мин  
     for k in range(N):
