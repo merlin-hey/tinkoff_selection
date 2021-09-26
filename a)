@@ -9,6 +9,7 @@ N = 5 # размер поля
 X = randint(2, 5) # случайным образом задаётся количество мин от 2 до 5 включительно
 back_field = [] # скрытое от пользователя поле игры
 front_field = [] # поле, которое видит пользователь
+file = open("saving_file.txt", "w") #создание файла для сохранения игр
 
 for i in range(N):
     back_field.append([0] * N)
@@ -55,11 +56,9 @@ def show_field(field):
         row_now = show_row[i]  
         this_show = Label(text = row_now)
         this_show.grid(column = 0, row = i+1)
-        file = open("saving_file.txt", "w")
         file.write(row_now + "\n")
         # текущее поле игры построчно выводится на консоль
         # и записывается в файл т.е. сохраняется
-    file.close()    
 
 def game_state(back, front):
 
@@ -127,6 +126,7 @@ def game_process():
             front_field[user_data[0]][user_data[1]] = back_field[user_data[0]][user_data[1]]
         if user_data[2] == 'Flag':
             front_field[data[0]][data[1]] = 'f'
+    file.close()    
             
 game_process()            
 window.mainloop()
