@@ -1,0 +1,152 @@
+from tkinter import *
+from random import randint
+
+window = Tk()
+window.title("Сапёр")
+window.geometry('600x600')
+
+back_field = [] # скрытое от пользователя поле игры
+front_field = [] # поле, которое видит пользователь
+file = open("saving_file.txt", "w") #создание файла для сохранения игр
+
+def player_turn(size):
+    
+    intro = Label(window, text="Введите X,Y,Action")  
+    intro.grid(column=0, row=2)
+    # создание надписи с указанием что делать пользователю
+
+    user_input = Entry(window, width=20)  
+    user_input.grid(column=1, row=2)
+    # создание ячейки для ввода
+
+    def click():
+        data = (user_input.get()).split(",") # получение введённой информации  
+        old_data_1 = data[1]
+        old_data_0 = data[0]
+        data[0] = old_data_1 # меняем местами data[0] и data[1] так как вложенный список характеризуется с помощью введённых Х и У так: [Y][X]
+        data[1] = old_data_0 - 1 # координаты в привычном виде с 1, а не 0 начинаются, потому -1 
+        data[0] = size - data[0] - 1 # так как координата У снизу вверх увеличивается от 1 до N
+        return data
+
+    done = Button(window, text="данные введены", command = click)  
+    done.grid(column=2, row=2)
+    # кнопка подтверждения для отправки введённой информации пользователем
+
+    data = click()
+    return data # для дальнейших обновлений игры сохранение хода игрока
+
+def show_field(field, size):
+    
+    show_row = [[], [], [], [], []]
+    
+    for k in range(size):
+        for i in range(size):
+            show_row[k].append(field[k][i])
+        
+    for i in range(size):
+        row_now = show_row[i]  
+        this_show = Label(text = row_now)
+        this_show.grid(column = 0, row = i+3)
+        file.write(row_now + "\n")
+        # текущее поле игры построчно выводится на консоль
+        # и записывается в файл т.е. сохраняется  
+
+def game_state(back, front, size, bombs):
+
+    over = "over"
+    win = "win"
+    go_on = "go_on"
+    count_of_flags = 0 # счётчик обозначенных флашком клеток с минами
+    count_of_peace = 0 # счётчик открытых клеток без мин
+
+    for k in range(size):
+        for m in range(size):
+            if back[k][m] == 'м' and front[k][m] == 'м':
+                return over
+            if back[k][m] == 'м' and front[k][m] == 'f':
+                count_of_flags += 1
+            if back[k][m] != 'м' and front[k][m] == back[k][m]:
+                count_of_peace += 1
+                
+    if count_of_peace == (size * size - bombs) and count_of_flags == bombs:
+        return win
+    
+    return go_on        
+
+def number_of_neighbors(field, size, row, column):
+    
+    count_neighbors = 0
+    
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            x = row + i
+            y = column + j
+            if x >= 0 and x < size and y >= 0 and y < size:
+                if field[x][y] == 'м':
+                    count_neighbors += 1
+     
+    return count_neighbors
+
+def mine_location(back_field, size, count_of_mines):
+    
+    # расставление мин случайным образом
+    while count_of_mines > 0:
+        row = randint(0, size - 1)
+        column = randint(0, size - 1)
+        back_field[row][column] = 'м'
+        count_of_mines -= 1
+        
+    # заполнение других клеток количеством её соседей-мин  
+    for k in range(size):
+        for m in range(size):
+            if back_field[k][m] != 'м':
+                back_field[k][m] = number_of_neighbors(back_field, size, k, m)
+def user_size()
+    def click_2():
+        N = size_input.get()
+    question = Label(window, text="Введите N - размер поля N*N")  
+    question.grid(column=0, row=0)
+    size_input = Entry(window, width=20)  
+    size_input.grid(column=1, row=0)
+    done_version_2 = Button(window, text="данные введены", command = click_2)  
+    done_version_2.grid(column=2, row=0)
+    return N
+
+def user_bomb()
+    def click_3():
+        X = bomb_input.get()
+    question = Label(window, text="Введите X - количество бомб")  
+    question.grid(column=0, row=1)
+    bomb_input = Entry(window, width=20)  
+    bomb_input.grid(column=1, row=1)
+    done_version_3 = Button(window, text="данные введены", command = click_3)  
+    done_version_3.grid(column=2, row=1)
+    return X
+
+def game_process():
+
+    N = user_size() # ввод пользователем размеров поля
+    X = user_bomb() # ввод пользователем количества бомб
+
+    for i in range(N):
+    back_field.append([0] * N)
+    front_field.append([-5] * N)
+    i += 1
+    # начальное заполнение полей
+    
+    mine_location(back_field, N, X) #заполнение back_field
+    
+    while game_state(back_field, front_field, N, X) == "go_on":
+        
+        show_field(front_field, N)
+
+        user_data = player_turn(N)
+        
+        if user_data[2] == 'Open':
+            front_field[user_data[0]][user_data[1]] = back_field[user_data[0]][user_data[1]]
+        if user_data[2] == 'Flag':
+            front_field[data[0]][data[1]] = 'f'
+    file.close()  
+            
+game_process()            
+window.mainloop()
