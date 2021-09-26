@@ -34,11 +34,13 @@ def player_turn():
         data[0] = old_data_1 # меняем местами data[0] и data[1] так как вложенный список характеризуется с помощью введённых Х и У так: [Y][X]
         data[1] = old_data_0 - 1 # координаты в привычном виде с 1, а не 0 начинаются, потому -1 
         data[0] = N - data[0] - 1 # так как координата У снизу вверх увеличивается от 1 до N
+        return data
 
     done = Button(window, text="данные введены", command = click)  
     done.grid(column=2, row=0)
     # кнопка подтверждения для отправки введённой информации пользователем
     
+    data = click()
     return data # для дальнейших обновлений игры сохранение хода игрока
 
 def show_field(field):
@@ -56,9 +58,9 @@ def show_field(field):
         row_now = show_row[i]  
         this_show = Label(text = row_now)
         this_show.grid(column = 0, row = i+1)
-        file.write(row_now + "\n")
+        file.write(str(row_now) + "\n")
         # текущее поле игры построчно выводится на консоль
-        # и записывается в файл т.е. сохраняется
+        # и записывается в файл т.е. сохраняется  
 
 def game_state(back, front):
 
@@ -127,7 +129,7 @@ def game_process():
             front_field[user_data[0]][user_data[1]] = back_field[user_data[0]][user_data[1]]
         if user_data[2] == 'Flag':
             front_field[data[0]][data[1]] = 'f'
-    file.close()    
+    file.close()  
             
 game_process()            
 window.mainloop()
