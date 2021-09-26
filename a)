@@ -1,0 +1,132 @@
+from tkinter import *
+from random import randint
+
+window = Tk()
+window.title("Сапёр")
+window.geometry('600x600')
+
+N = 5 # размер поля
+X = randint(2, 5) # случайным образом задаётся количество мин от 2 до 5 включительно
+back_field = [] # скрытое от пользователя поле игры
+front_field = [] # поле, которое видит пользователь
+
+for i in range(N):
+    back_field.append([0] * N)
+    front_field.append([-5] * N)
+    i += 1
+# начальное заполнение полей
+    
+def player_turn():
+    
+    intro = Label(window, text="Введите X,Y,Action")  
+    intro.grid(column=0, row=0)
+    # создание надписи с указанием что делать пользователю
+
+    user_input = Entry(window, width=20)  
+    user_input.grid(column=1, row=0)
+    # создание ячейки для ввода
+
+    def click():
+        data = (user_input.get()).split(",") # получение введённой информации  
+        old_data_1 = data[1]
+        old_data_0 = data[0]
+        data[0] = old_data_1 # меняем местами data[0] и data[1] так как вложенный список характеризуется с помощью введённых Х и У так: [Y][X]
+        data[1] = old_data_0 - 1 # координаты в привычном виде с 1, а не 0 начинаются, потому -1 
+        data[0] = N - data[0] - 1 # так как координата У снизу вверх увеличивается от 1 до N
+
+    done = Button(window, text="данные введены", command = click)  
+    done.grid(column=2, row=0)
+    # кнопка подтверждения для отправки введённой информации пользователем
+    
+    return data # для дальнейших обновлений игры сохранение хода игрока
+
+def show_field(field):
+    
+    show_row = [[], [], [], [], []]
+    
+    for i in range(N):
+        show_row[0].append(field[0][i])
+        show_row[1].append(field[1][i])
+        show_row[2].append(field[2][i])
+        show_row[3].append(field[3][i])
+        show_row[4].append(field[4][i])
+        
+    for i in range(N):
+        row_now = show_row[i]  
+        this_show = Label(text = row_now)
+        this_show.grid(column = 0, row = i+1)
+        file = open("saving_file.txt", "w")
+        file.write(row_now + "\n")
+        # текущее поле игры построчно выводится на консоль
+        # и записывается в файл т.е. сохраняется
+    file.close()    
+
+def game_state(back, front):
+
+    over = "over"
+    win = "win"
+    go_on = "go_on"
+    count_of_flags = 0 # счётчик обозначенных флашком клеток с минами
+    count_of_peace = 0 # счётчик открытых клеток без мин
+
+    for k in range(N):
+        for m in range(N):
+            if back[k][m] == 'м' and front[k][m] == 'м':
+                return over
+            if back[k][m] == 'м' and front[k][m] == 'f':
+                count_of_flags += 1
+            if back[k][m] != 'м' and front[k][m] == back[k][m]:
+                count_of_peace += 1
+                
+    if count_of_peace == (N*N - X) and count_of_flags == X:
+        return win
+    
+    return go_on        
+
+def number_of_neighbors(field, row, column):
+    
+    count_neighbors = 0
+    
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            x = row + i
+            y = column + j
+            if x >= 0 and x < N and y >= 0 and y < N:
+                if field[x][y] == 'м':
+                    count_neighbors += 1
+     
+    return count_neighbors
+
+def mine_location(back_field):
+    
+    count_of_mines = X
+
+    # расставление мин случайным образом
+    while count_of_mines > 0:
+        row = randint(0, 4)
+        column = randint(0, 4)
+        back_field[row][column] = 'м'
+        
+    # заполнение других клеток количеством её соседей-мин  
+    for k in range(N):
+        for m in range(N):
+            if back_field[k][m] != 'м':
+                back_field[k][m] = number_of_neighbors(back_field, k, m)
+
+def game_process():
+    
+    mine_location(back_field) #заполнение back_field
+    
+    while game_state(back_field, front_field) == "go_on":
+        
+        show_field(front_field)
+
+        user_data = player_turn()
+        
+        if user_data[2] == 'Open':
+            front_field[user_data[0]][user_data[1]] = back_field[user_data[0]][user_data[1]]
+        if user_data[2] == 'Flag':
+            front_field[data[0]][data[1]] = 'f'
+            
+game_process()            
+window.mainloop()
